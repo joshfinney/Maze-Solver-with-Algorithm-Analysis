@@ -1,51 +1,70 @@
+import os
+
 def read_maze(file_name):
-    with open(file_name, 'r') as f:
-        maze = [[char for char in line.strip()] for line in f]
-    return maze
+    # read the maze from a text file and return it as a 2D list
+    with open(file_name, 'r') as file:
+        maze = [list(line.strip()) for line in file]
+    height = len(maze)
+    width = len(maze[0])
+    return maze, height, width
 
-def dfs(maze):
-    stack = [(0, i) for i in range(len(maze[0])) if maze[0][i] == '-']  # Initialize stack with start node
-    visited = set(stack)  # Mark start node as visited
-    path_dict = {(0, i): [(0, i)] for i in range(len(maze[0])) if maze[0][i] == '-'}  # Initialize path dict with start node
+def print_maze(maze):
+    # print the maze
+    for row in maze:
+        print(''.join(row))
 
-    while stack:
-        node = stack.pop()
-        if node[0] == len(maze) - 1:  # Check if goal is reached
-            return path_dict[node]
+def dfs(maze, visited, x, y):
+    # perform depth-first search
+    if x < 0 or x >= len(maze[0]) or y < 0 or y >= len(maze):
+        # out of bounds
+        return False
+    if visited[y][x] or maze[y][x] == '#':
+        # already visited or wall
+        return False
+    if y == len(maze) - 1:
+        # reached the goal
+        return True
+    visited[y][x] = True
+    # explore the adjacent nodes
+    if dfs(maze, visited, x-1, y): # left
+        print(f"({y}, {x})")
+        return True
+    if dfs(maze, visited, x+1, y): # right
+        print(f"({y}, {x})")
+        return True
+    if dfs(maze, visited, x, y-1): # up
+        print(f"({y}, {x})")
+        return True
+    if dfs(maze, visited, x, y+1): # down
+        print(f"({y}, {x})")
+        return True
+    return False
 
-        for neighbor in get_neighbors(node, maze):
-            if neighbor not in visited:
-                visited.add(neighbor)
-                stack.append(neighbor)
-                path_dict[neighbor] = path_dict[node] + [neighbor]
+def solve_maze(file_name):
+    maze, height, width = read_maze(file_name)
+    print_maze(maze)
+    # check the size of the maze
+    if height < 2 or width < 2:
+        print("Error: invalid maze size.")
+        return
 
-    return "Maze is unsolvable"
+    # find the starting position
+    start_x = maze[0].index('-')
+    start_y = 0
 
-def get_neighbors(node, maze):
-    row, col = node
-    neighbors = []
+    if start_x < 0:
+        print("Error: Starting position not found.")
+        return
 
-    if row > 0 and maze[row-1][col] == '-':  # Check North neighbor
-        neighbors.append((row-1, col))
-    if row < len(maze)-1 and maze[row+1][col] == '-':  # Check South neighbor
-        neighbors.append((row+1, col))
-    if col > 0 and maze[row][col-1] == '-':  # Check West neighbor
-        neighbors.append((row, col-1))
-    if col < len(maze[0])-1 and maze[row][col+1] == '-':  # Check East neighbor
-        neighbors.append((row, col+1))
+    # initialize the visited matrix
+    visited = [[False for _ in range(width)] for _ in range(height)]
 
-    return neighbors
+    # solve the maze using depth-first search
+    dfs(maze, visited, start_x, start_y)
 
 def main():
-    maze = read_maze('maze-Small.txt')
-    path = dfs(maze)
-
-    if path != "Maze is unsolvable":
-        print("The path from the start to the goal is:")
-        for node in path:
-            print(node)
-    else:
-        print("The maze is unsolvable.")
+    os.chdir(r"/Users/josh/Documents/GitHub/artificial-intelligence-ca-2023/")
+    solve_maze('maze-files/maze-Small.txt')
 
 
 if __name__ == "__main__":
