@@ -1,1 +1,0 @@
-# artificial-intelligence-ca-2023
